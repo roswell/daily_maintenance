@@ -11,5 +11,5 @@
 (task "default" ()
   (mapc #'sh
         `("git clone --mirror https://gitlab.common-lisp.net/asdf/asdf.git .git"
-          ,(format nil "git remote set-url origin https://~A:x-oauth-basic@github.com/roswell/asdf" (ros:getenv "GITHUB_OAUTH_TOKEN"))
-          "git push --mirror git@github.com:roswell/asdf.git")))
+          ,(format nil "git remote set-url origin https://~A:x-oauth-basic@github.com/roswell/asdf.git" (ros:getenv "GITHUB_OAUTH_TOKEN"))
+          ,(format nil "git push --mirror https://~A:x-oauth-basic@github.com/roswell/asdf.git" (ros:getenv "GITHUB_OAUTH_TOKEN")))))
