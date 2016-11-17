@@ -9,6 +9,7 @@ env:
    - LISP=sbcl-bin
   matrix:
    - SCRIPT=asdf
+   - SCRIPT=ecl
 
 os:
   - linux
