@@ -8,7 +8,8 @@ env:
    - ROSWELL_INSTALL_DIR=$HOME/.roswell
    - LISP=sbcl-bin
   matrix:
-   
+   - SCRIPT=asdf
+
 os:
   - linux
 
@@ -21,4 +22,4 @@ install:
   - if ! which lake ; then ros install snmsts/sn.github Rudolph-Miller/cl-gists lake;lake-tools dump; fi
 
 script:
-  - lake
+  - cd $SCRIPT;lake

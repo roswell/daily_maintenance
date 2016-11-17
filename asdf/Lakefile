@@ -1,0 +1,15 @@
+#|-*- mode:lisp -*-|#
+(in-package :cl-user)
+(defpackage :lake.user
+  (:use :cl :lake :cl-syntax)
+  (:shadowing-import-from :lake
+                          :directory))
+(in-package :lake.user)
+
+(use-syntax :interpol)
+
+(task "default" ()
+  (mapc #'sh
+        "git clone --mirror https://gitlab.common-lisp.net/asdf/asdf.git .git"
+        "git remote set-url origin git@github.com:roswell/asdf.git"
+        "git push --mirror git@github.com:roswell/asdf.git"))
