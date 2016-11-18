@@ -1,0 +1,20 @@
+#|-*- mode:lisp -*-|#
+(ql:quickload :dexador :silent t)
+(in-package :cl-user)
+(defpackage :lake.user
+  (:use :cl :lake :cl-syntax)
+  (:shadowing-import-from :lake
+                          :directory))
+
+(in-package :lake.user)
+
+(use-syntax :interpol)
+
+(task "default" ()
+  (print
+   (dex:post "https://api.travis-ci.org/repo/roswell%2Fsbcl_bin/requests"
+             :content "{\"request\": {\"branch\":\"master\"}}"
+             :headers `(("Content-Type" . "application/json")
+                        ("Accept" . "application/json")
+                        ("Travis-API-Version" . "3")
+                        ("Authorization" . ,(uiop:getenv "TRAVIS_TOKEN"))))))

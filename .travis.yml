@@ -10,6 +10,7 @@ env:
   matrix:
    - SCRIPT=asdf
    - SCRIPT=ecl
+   - SCRIPT=sbcl-build
 
 os:
   - linux
