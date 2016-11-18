@@ -17,4 +17,4 @@
              :headers `(("Content-Type" . "application/json")
                         ("Accept" . "application/json")
                         ("Travis-API-Version" . "3")
-                        ("Authorization" . ,(uiop:getenv "TRAVIS_TOKEN"))))))
+                        ("Authorization" . ,(format nil "token ~A"(uiop:getenv "TRAVIS_TOKEN")))))))
