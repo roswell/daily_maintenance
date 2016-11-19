@@ -1,0 +1,103 @@
+#|-*- mode:lisp -*-|#
+
+(ql:quickload :roswell.github.utils :silent t)
+(ros:include "util")
+
+(in-package :cl-user)
+(defpackage :lake.user
+  (:use :cl :lake :cl-syntax :roswell.github.utils)
+  (:shadowing-import-from :lake
+                          :directory))
+(in-package :lake.user)
+
+(use-syntax :interpol)
+
+(defparameter *repo* "quicklisp")
+
+(defun release-path (path)
+  (substitute #\_ #\+ path))
+
+(defun release-uri (uri)
+  (format nil "https://github.com/~A/~A/releases/download/~A"
+          *user*
+          *repo*
+          (release-path (format nil "~{~A~^/~}" (last (split-sequence:split-sequence #\/ uri) 2)))))
+
+(defun mirror-version-systems (version)
+  (let ((uri (format nil "http://beta.quicklisp.org/dist/quicklisp/~A/systems.txt" version))
+        (path "systems.txt"))
+    (fetch-upload path uri version)))
+
+(defun mirror-version-releases (version)
+  (loop with releases = (releases-list *user* *repo*)
+        with base-uri = (format nil "http://beta.quicklisp.org/dist/quicklisp/~A/releases.txt" version)
+        with list = (dex:get base-uri)
+        for uri in (delete nil (mapcar (lambda (x) (second (split-sequence:split-sequence #\space x)))
+                                       (cdr (split-sequence:split-sequence #\lf list))))
+        for *release* = (first (last (split-sequence:split-sequence #\/ uri) 2))
+        for path = (release-path (file-namestring (quri:uri-path (quri:uri uri))))
+        do (if (find path (getf (find *release*
+                                      releases
+                                      :key (lambda (x) (getf x :|tag_name|))
+                                      :test 'equal) :|assets|)
+                     :key (lambda (x) (getf x :|name|))
+                     :test #'equal)
+               (progn #+nil(format t "skip ~A~%" uri))
+               (progn (fetch-upload path uri *release*)
+                      #+nil(sleep 1)))
+        finally
+           (let ((l (split-sequence:split-sequence #\lf list))
+                 (path "releases.txt"))
+             (with-open-file (out path
+                                  :direction :output
+                                  :if-exists :supersede)
+               (format out "~{~A~%~}"
+                       (cons (first l)
+                             (mapcar (lambda (x)
+                                       (let* ((l (split-sequence:split-sequence #\space x))
+                                              (uri (second l)))
+                                         (setf (second l) (release-uri uri))
+                                         (format nil "~{~A~^ ~}" l)))
+                                     (cdr (butlast l))))))
+             (github path version *user* *repo* t))))
+
+(defun mirror-version-distinfo (version)
+  (let* ((uri (format nil "http://beta.quicklisp.org/dist/quicklisp/~A/distinfo.txt" version))
+         (contents (dex:get uri))
+         (path "distinfo.txt")
+         (path2 "quicklisp.txt")
+         (assoc (mapcar #'(lambda(x) (split-sequence:split-sequence #\Space x))
+                        (split-sequence:split-sequence #\lf contents))))
+    (mapc (lambda (x)
+            (setf (second (assoc x assoc :test 'equal))
+                  (release-uri (second (assoc x assoc :test 'equal)))))
+          (list "system-index-url:"
+                "release-index-url:"
+                "canonical-distinfo-url:"
+                "distinfo-subscription-url:"))
+    (with-open-file (out path
+                         :direction :output
+                         :if-exists :supersede)
+      (format out "~{~{~A~^ ~}~^~%~}" assoc))
+    (github path version *user* *repo* t)
+    (with-open-file (out path2
+                         :direction :output
+                         :if-exists :supersede)
+      (format out "~{~{~A~^ ~}~^~%~}" assoc))
+    (github path2 "dist" *user* *repo* t)))
+
+(defun mirror-version (version)
+  (mirror-version-systems version)
+  (mirror-version-releases version)
+  (mirror-version-distinfo version))
+
+(defun find-version ()
+  (let*((* (cdr (split-sequence:split-sequence #\lf (dex:get "http://beta.quicklisp.org/dist/quicklisp.txt"))))
+        (* (mapcar (lambda (x) (split-sequence:split-sequence #\space x)) *))
+        (* (find "canonical-distinfo-url:" * :test 'equal :key 'first)))
+    (first (last (split-sequence:split-sequence #\/(second *)) 2))))
+
+(task "default" ()
+  (mirror-version (if (zerop (length (ros:getenv "VERSION")))
+                      (find-version)
+                      (ros:getenv "VERSION"))))
