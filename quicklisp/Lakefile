@@ -59,7 +59,8 @@
                                          (setf (second l) (release-uri uri))
                                          (format nil "~{~A~^ ~}" l)))
                                      (cdr (butlast l))))))
-             (github path version *user* *repo* t))))
+             (ignore-errors
+              (github path version *user* *repo*)))))
 
 (defun mirror-version-distinfo (version)
   (let* ((uri (format nil "http://beta.quicklisp.org/dist/quicklisp/~A/distinfo.txt" version))
@@ -84,6 +85,7 @@
                          :direction :output
                          :if-exists :supersede)
       (format out "~{~{~A~^ ~}~^~%~}" assoc))
+    ;;tbd check for update.
     (github path2 "dist" *user* *repo* t)))
 
 (defun mirror-version (version)
