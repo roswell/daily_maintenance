@@ -8,6 +8,7 @@ env:
    - ROSWELL_INSTALL_DIR=$HOME/.roswell
    - LISP=sbcl-bin/1.3.12
   matrix:
+   - SCRIPT=libsigsegv
    - SCRIPT=ffcall
    - SCRIPT=asdf
    - SCRIPT=ecl
