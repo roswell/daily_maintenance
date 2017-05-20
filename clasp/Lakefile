@@ -11,6 +11,5 @@
 (task "default" ()
   (let ((name "clasp"))
     (mapc #'sh
-          `("git clone --mirror https://github.com/drmeister/clasp.git .git"
-            ,(format nil "git remote set-url origin https://~A:x-oauth-basic@github.com/roswell/~A.git" (ros:getenv "GITHUB_OAUTH_TOKEN") name)
+          `("git clone --bare --config remote.origin.fetch='+refs/heads/*:refs/heads/*' --config remote.origin.mirror=true https://github.com/drmeister/clasp.git .git"
             ,(format nil "git push --mirror https://~A:x-oauth-basic@github.com/roswell/~A.git" (ros:getenv "GITHUB_OAUTH_TOKEN") name)))))
