@@ -1,0 +1,36 @@
+#|-*- mode:lisp -*-|#
+
+(ql:quickload :roswell.github.utils :silent nil)
+(ros:include "util")
+
+(in-package :cl-user)
+(defpackage :lake.user
+  (:use :cl :lake :cl-syntax :roswell.github.utils)
+  (:shadowing-import-from :lake
+                          :directory))
+(in-package :lake.user)
+
+(use-syntax :interpol)
+
+(defun get-tags-from-github ()
+  (remove-if (lambda (x) (getf x :|prerelease|))
+             (releases-list "Clozure" "ccl")))
+
+(defun mirror-version (version)
+  (loop
+     with *release* = (string-left-trim "v" (getf version :|tag_name|))
+     with *repo* = "ccl_bin"
+     with releases = (releases-list "roswell" "ccl_bin")
+     for uri in (mapcar (lambda (x) (getf x :|browser_download_url|))(getf version :|assets|))
+     for path = (file-namestring (quri:uri-path (quri:uri uri)))
+     do (if (find path (getf (find *release*
+                                   releases
+                                   :key (lambda (x) (getf x :|tag_name|))
+                                   :test 'equal) :|assets|)
+                  :key (lambda (x) (getf x :|name|))
+                  :test #'equal)
+            (format t "skip ~A~%" uri)
+            (fetch-upload path uri (second (split-sequence:split-sequence #\- (pathname-name path)))))))
+
+(task "default" ()
+  (mapc #'mirror-version (get-tags-from-github)))
