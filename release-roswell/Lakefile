@@ -13,7 +13,7 @@
 
 (defvar *success* t)
 (defun appveyor (tag)
-  (let ((path (ensure-directories-exist (merge-pathnames "appveyor/")))
+  (let* ((path (ensure-directories-exist (merge-pathnames "appveyor/")))
         (uri "https://ci.appveyor.com/api/projects/snmsts/roswell-en89n/artifacts")
         (amd64 (merge-pathnames (format nil "roswell_~A_amd64.zip" (subseq tag 1)) path))
         (i686 (merge-pathnames (format nil "roswell_~A_i686.zip"  (subseq tag 1)) path)))
