@@ -81,10 +81,10 @@
     (uiop:run-program (format nil "cd ~A;cp roswell-~A/ChangeLog roswell-~A/debian/changelog"
                               (namestring *default-pathname-defaults*) version version))
     (uiop:run-program  (format nil "cd ~A;cp archive/~A.tar.gz roswell_~A.orig.tar.gz"
-                                    (namestring *default-pathname-defaults*) version version version))
+                               (namestring *default-pathname-defaults*) version version))
     (uiop:run-program (format nil "cd ~A;cd roswell-~A;dpkg-buildpackage -us -uc"
                               (namestring *default-pathname-defaults*) version))
-    (dolist ((file (cl:directory (merge-pathnames "roswell_*.*" (namestring *default-pathname-defaults*)))))
+    (dolist (file (cl:directory (merge-pathnames "roswell_*.*" (namestring *default-pathname-defaults*))))
       (github file tag "roswell" "roswell"))))
 
 (task "default" ()
