@@ -1,0 +1,46 @@
+#|-*- mode:lisp -*-|#
+(in-package :cl-user)
+(ql:quickload '(:dexador :lake :cl-syntax :roswell.github.utils) :silent nil)
+(defpackage :lake.user
+  (:use :cl :lake :cl-syntax)
+  (:shadowing-import-from :lake
+                          :directory))
+(in-package :lake.user)
+
+(use-syntax :interpol)
+
+(roswell:include "util-install-quicklisp")
+
+(defvar *success* t)
+(defun appveyor (tag)
+  (let ((path (ensure-directories-exist (merge-pathnames "appveyor/")))
+        (uri "https://ci.appveyor.com/api/projects/snmsts/roswell-en89n/artifacts")
+        (amd64 (merge-pathnames (format nil "roswell_~A_amd64.zip" (subseq tag 1)) path))
+        (i686 (merge-pathnames (format nil "roswell_~A_i686.zip"  (subseq tag 1)) path)))
+    (every
+     #'identity
+     (list
+      (ignore-errors
+        (dex:fetch (format nil "~A/Roswell-x86_64.zip?tag=~A&~A"
+                           uri tag
+                           "job=Environment%3A%20MSYS2_ARCH%3Dx86_64,%20MSYS2_BITS%3D64,%20MSYSTEM%3DMINGW64,%20METHOD%3Dcross")
+                   amd64)
+        (github amd64 tag "roswell" "roswell")
+        t)
+      (ignore-errors
+        (dex:fetch (format nil "~A/Roswell-i686.zip?tag=~A&~A"
+                           uri tag
+                           "job=Environment%3A%20MSYS2_ARCH%3Di686,%20MSYS2_BITS%3D32,%20MSYSTEM%3DMINGW32,%20METHOD%3Dcross")
+                   i686)
+        (github i686 tag "roswell" "roswell")
+        t)))))
+
+(task "default" ()
+  (let ((version (or (unless (zerop (length (ros:getenv "ROSWELL_TAG")))
+                       (ros:getenv "ROSWELL_TAG"))
+                     (first (roswell.install:github-version
+                             "https://github.com/roswell/roswell/releases.atom"
+                             "roswell"
+                             (lambda (href) (subseq href (1+ (position #\/ href :from-end t)))))))))
+    (unless (ros:getenv "RELEASE_ROSWELL_SKIP_APPVEYOR")
+      (setf *success* (and (appveyor version) *success*)))))
