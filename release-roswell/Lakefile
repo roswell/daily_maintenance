@@ -35,12 +35,57 @@
         (github i686 tag "roswell" "roswell")
         t)))))
 
-(defun debian (tag)
-  (uiop:run-program (format nil "git clone --depth=1 -b ~A git://github.com/roswell/roswell" tag) :output :interactive)
-  (uiop:run-program (format nil "ros roswell/debian/debian.ros") :output :interactive )
-  )
+(defun fetch-upstream (tag output)
+  (let ((path (merge-pathnames (format nil "~A.tar.gz" (subseq tag 1)) output)))
+    (roswell.util:download (format nil "https://github.com/roswell/roswell/archive/~A.tar.gz" tag) path)
+    path))
 
-(debian "v17.12.10.86")
+(defun rename-upstream (path package-name output)
+  (print (list :rename-upstream path package-name output))
+  (let* ((name (pathname-name path))
+         (version (pathname-name name))
+         (new (make-pathname :name (format nil "~A_~A.orig.tar" package-name
+                                           version)
+                             :defaults output)))
+    (print (list :new new))
+    (uiop/os:chdir output)
+    (uiop/run-program:run-program (format nil "tar xf ~A" (namestring path)))
+    (rename-file path new)
+    new))
+
+(defun cp-debian (output)
+  (namestring
+   (first
+    (remove-if-not 
+     #'(lambda (x)
+         (and (not (pathname-name x))
+              (string-equal "roswell" 
+                            (first (last (pathname-directory x)))
+                            :end2 (min 7 (length (first (last 
+                                                         (pathname-directory x))))))))
+     (cl:directory (merge-pathnames "*.*" output))))))
+
+
+(defun dpkg-buildpackage (path)
+  (uiop/os:chdir path)
+  (uiop/run-program:run-program "dpkg-buildpackage -us -uc" :output :interactive))
+
+(defun debian (tag)
+  (let ((output (ensure-directories-exist (merge-pathnames "archive/")))
+        (version (subseq tag 1))
+        )
+    (fetch-upstream tag output)
+    (uiop:run-program (format nil "cd ~A;tar xf archive/~A.tar.gz"
+                              (namestring *default-pathname-defaults*)
+                              version))
+    (uiop:run-program (format nil "cd ~A;cp roswell-~A/ChangeLog roswell-~A/debian/changelog"
+                              (namestring *default-pathname-defaults*) version version))
+    (uiop:run-program  (format nil "cd ~A;cp archive/~A.tar.gz roswell_~A.orig.tar.gz"
+                                    (namestring *default-pathname-defaults*) version version version))
+    (uiop:run-program (format nil "cd ~A;cd roswell-~A;dpkg-buildpackage -us -uc"
+                              (namestring *default-pathname-defaults*) version))
+    (dolist ((file (cl:directory (merge-pathnames "roswell_*.*" (namestring *default-pathname-defaults*)))))
+      (github file tag "roswell" "roswell"))))
 
 (task "default" ()
   (let ((version (or (unless (zerop (length (ros:getenv "ROSWELL_TAG")))
@@ -51,4 +96,6 @@
                              (lambda (href) (subseq href (1+ (position #\/ href :from-end t)))))))))
     (unless (ros:getenv "RELEASE_ROSWELL_SKIP_APPVEYOR")
       (setf *success* (and (appveyor version) *success*)))
+    (unless (ros:getenv "RELEASE_ROSWELL_SKIP_DEBIAN")
+      (setf *success* (and (debian version) *success*)))
     ))
