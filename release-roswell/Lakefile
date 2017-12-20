@@ -35,6 +35,13 @@
         (github i686 tag "roswell" "roswell")
         t)))))
 
+(defun debian (tag)
+  (uiop:run-program (format nil "git clone --depth=1 -b ~A git://github.com/roswell/roswell" tag) :output :interactive)
+  (uiop:run-program (format nil "ros roswell/debian/debian.ros") :output :interactive )
+  )
+
+(debian "v17.12.10.86")
+
 (task "default" ()
   (let ((version (or (unless (zerop (length (ros:getenv "ROSWELL_TAG")))
                        (ros:getenv "ROSWELL_TAG"))
@@ -43,4 +50,5 @@
                              "roswell"
                              (lambda (href) (subseq href (1+ (position #\/ href :from-end t)))))))))
     (unless (ros:getenv "RELEASE_ROSWELL_SKIP_APPVEYOR")
-      (setf *success* (and (appveyor version) *success*)))))
+      (setf *success* (and (appveyor version) *success*)))
+    ))

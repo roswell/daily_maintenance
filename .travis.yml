@@ -17,6 +17,13 @@ cache:
   directories:
     - $HOME/.roswell
 
+addons:
+  apt:
+    packages:
+      - debhelper
+      - dh-autoreconf
+      - fakeroot
+
 install:
   - curl -L https://raw.githubusercontent.com/roswell/roswell/$ROSWELL_BRANCH/scripts/install-for-ci.sh | sh
   - if ! which lake ; then ros install snmsts/sn.github fukamachi/dexador roswell/sbcl_bin lake;lake-tools dump; fi
