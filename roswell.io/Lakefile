@@ -10,10 +10,10 @@
 
 (task "default" ()
   (mapc #'sh
-        `(,(format nil "git clone -b ci https://~A:x-oauth-basic@github.com/roswell/roswell.github.io.git" (ros:getenv "GITHUB_OAUTH_TOKEN"))
-          "cd roswell.github.io;make"
-          )))
-
-
-
-;;; here follow your tasks...
+        `("git clone -b ci https://github.com/roswell/roswell.github.io.git ci"
+          ,(format nil "cd ci;git clone -b master https://~A:x-oauth-basic@github.com/roswell/roswell.github.io.git _public" (ros:getenv "GITHUB_OAUTH_TOKEN"))
+          "cd ci;rm -rf _public/*"
+          "cd ci;./wiki2html.ros"
+          "cd ci;cp _public/Home.html _public/index.html"
+          "cd ci;cp style.css _public/style.css"
+          "cd ci;make upload")))
