@@ -1,0 +1,15 @@
+#|-*- mode:lisp -*-|#
+(in-package :cl-user)
+(defpackage :lake.user
+  (:use :cl :lake :cl-syntax)
+  (:shadowing-import-from :lake
+                          :directory))
+(in-package :lake.user)
+
+(use-syntax :interpol)
+
+(task "default" ()
+  (mapc #'sh
+        `("git clone https://github.com/norvig/paip-lisp.git ."
+          ,(format nil "git remote add _ https://~A:x-oauth-basic@github.com/snmsts/paip" (ros:getenv "GITHUB_OAUTH_TOKEN"))
+          ,(format nil "git push _ master"))))
