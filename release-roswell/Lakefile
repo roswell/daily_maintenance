@@ -65,15 +65,13 @@
                                                          (pathname-directory x))))))))
      (cl:directory (merge-pathnames "*.*" output))))))
 
-
 (defun dpkg-buildpackage (path)
   (uiop/os:chdir path)
   (uiop/run-program:run-program "dpkg-buildpackage -us -uc" :output :interactive))
 
 (defun debian (tag)
   (let ((output (ensure-directories-exist (merge-pathnames "archive/")))
-        (version (subseq tag 1))
-        )
+        (version (subseq tag 1)))
     (fetch-upstream tag output)
     (uiop:run-program (format nil "cd ~A;tar xf archive/~A.tar.gz"
                               (namestring *default-pathname-defaults*)
@@ -95,7 +93,10 @@
                              "roswell"
                              (lambda (href) (subseq href (1+ (position #\/ href :from-end t)))))))))
     (unless (ros:getenv "RELEASE_ROSWELL_SKIP_APPVEYOR")
-      (setf *success* (and (appveyor version) *success*)))
+      (setf *success* (ignore-errors
+                        (and (appveyor version) *success*))))
     (unless (ros:getenv "RELEASE_ROSWELL_SKIP_DEBIAN")
-      (setf *success* (and (debian version) *success*)))
-    ))
+      (setf *success* (ignore-errors
+                        (and (debian version) *success*))))
+    (unless *success*
+      (error "err"))))
