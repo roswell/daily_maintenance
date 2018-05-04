@@ -1,0 +1,15 @@
+#|-*- mode:lisp -*-|#
+(in-package :cl-user)
+(defpackage :lake.user
+  (:use :cl :lake :cl-syntax)
+  (:shadowing-import-from :lake
+                          :directory))
+(in-package :lake.user)
+
+(use-syntax :interpol)
+
+(task "default" ()
+  (mapc #'sh
+        `("git clone --mirror https://gitlab.com/gnu-clisp/clisp.git .git"
+          ,(format nil "git remote set-url origin https://~A:x-oauth-basic@github.com/roswell/clisp.git" (ros:getenv "GITHUB_OAUTH_TOKEN"))
+          ,(format nil "git push --mirror https://~A:x-oauth-basic@github.com/roswell/clisp.git" (ros:getenv "GITHUB_OAUTH_TOKEN")))))
