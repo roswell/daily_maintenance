@@ -88,7 +88,7 @@
 (task "default" ()
   (let ((version (or (unless (zerop (length (ros:getenv "ROSWELL_TAG")))
                        (ros:getenv "ROSWELL_TAG"))
-                     (first (roswell.install:github-version
+                     (third (roswell.install:github-version
                              "https://github.com/roswell/roswell/releases.atom"
                              "roswell"
                              (lambda (href) (subseq href (1+ (position #\/ href :from-end t)))))))))
