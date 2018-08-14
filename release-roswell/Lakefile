@@ -92,9 +92,9 @@
                              "https://github.com/roswell/roswell/releases.atom"
                              "roswell"
                              (lambda (href) (subseq href (1+ (position #\/ href :from-end t)))))))))
-    (unless (ros:getenv "RELEASE_ROSWELL_SKIP_APPVEYOR")
-      (setf *success* (ignore-errors
-                        (and (appveyor version) *success*))))
+    #+nil(unless (ros:getenv "RELEASE_ROSWELL_SKIP_APPVEYOR")
+           (setf *success* (ignore-errors
+                            (and (appveyor version) *success*))))
     (unless (ros:getenv "RELEASE_ROSWELL_SKIP_DEBIAN")
       (setf *success* (ignore-errors
                         (and (debian version) *success*))))
