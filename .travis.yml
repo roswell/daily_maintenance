@@ -23,6 +23,11 @@ env:
 os:
   - linux
 
+matrix:
+  include:
+      - os: osx
+        env:SCRIPT=brew
+
 cache:
   directories:
     - $HOME/.roswell
