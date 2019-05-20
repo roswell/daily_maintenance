@@ -25,14 +25,16 @@
                            uri tag
                            "job=Environment%3A%20MSYS2_ARCH%3Dx86_64,%20MSYS2_BITS%3D64,%20MSYSTEM%3DMINGW64,%20METHOD%3Dcross")
                    amd64)
-        (github amd64 tag "roswell" "roswell")
+        (when (ros:getenv "GITHUB_OAUTH_TOKEN")
+          (github amd64 tag "roswell" "roswell"))
         t)
       (ignore-errors
         (dex:fetch (format nil "~A/Roswell-i686.zip?tag=~A&~A"
                            uri tag
                            "job=Environment%3A%20MSYS2_ARCH%3Di686,%20MSYS2_BITS%3D32,%20MSYSTEM%3DMINGW32,%20METHOD%3Dcross")
                    i686)
-        (github i686 tag "roswell" "roswell")
+        (when (ros:getenv "GITHUB_OAUTH_TOKEN")
+          (github i686 tag "roswell" "roswell"))
         t)))))
 
 (defun fetch-upstream (tag output)
@@ -82,8 +84,9 @@
                                (namestring *default-pathname-defaults*) version version))
     (uiop:run-program (format nil "cd ~A;cd roswell-~A;dpkg-buildpackage -us -uc"
                               (namestring *default-pathname-defaults*) version))
-    (dolist (file (cl:directory (merge-pathnames "roswell_*.*" (namestring *default-pathname-defaults*))))
-      (github file tag "roswell" "roswell"))))
+    (when (ros:getenv "GITHUB_OAUTH_TOKEN")
+      (dolist (file (cl:directory (merge-pathnames "roswell_*.*" (namestring *default-pathname-defaults*))))
+        (github file tag "roswell" "roswell")))))
 
 (task "default" ()
   (let ((version (or (unless (zerop (length (ros:getenv "ROSWELL_TAG")))
@@ -92,9 +95,10 @@
                              "https://github.com/roswell/roswell/releases.atom"
                              "roswell"
                              (lambda (href) (subseq href (1+ (position #\/ href :from-end t)))))))))
-    #+nil(unless (ros:getenv "RELEASE_ROSWELL_SKIP_APPVEYOR")
-           (setf *success* (ignore-errors
-                            (and (appveyor version) *success*))))
+    (unless (ros:getenv "RELEASE_ROSWELL_SKIP_APPVEYOR")
+      (appveyor version)
+      #+nil(setf *success* (ignore-errors
+                             (and  *success*))))
     (unless (ros:getenv "RELEASE_ROSWELL_SKIP_DEBIAN")
       (debian version)
       #+nil(setf *success* (ignore-errors
