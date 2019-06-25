@@ -9,6 +9,7 @@
 (use-syntax :interpol)
 
 (task "default" ()
+  (ignore-errors (sh "git config --global --unset remote.origin.fetch"))
   (let ((name "clasp"))
     (mapc #'sh
           `("git clone --bare --config remote.origin.fetch='+refs/heads/*:refs/heads/*' --config remote.origin.mirror=true https://github.com/clasp-developers/clasp.git .git"
