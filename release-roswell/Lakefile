@@ -1,6 +1,6 @@
 #|-*- mode:lisp -*-|#
 (in-package :cl-user)
-(ql:quickload '(:dexador :lake :cl-syntax :roswell.github.utils) :silent nil)
+(ql:quickload '(:dexador :lake :cl-syntax :roswell.github.utils) :silent t)
 (defpackage :lake.user
   (:use :cl :lake :cl-syntax :roswell.github.utils)
   (:shadowing-import-from :lake
@@ -74,6 +74,7 @@
 (defun debian (tag)
   (let ((output (ensure-directories-exist (merge-pathnames "archive/")))
         (version (subseq tag 1)))
+    (setf (uiop:getenv "DEB_CFLAGS_SET") "-O3")
     (fetch-upstream tag output)
     (uiop:run-program (format nil "cd ~A;tar xf archive/~A.tar.gz"
                               (namestring *default-pathname-defaults*)
@@ -106,3 +107,16 @@
 
     (unless *success*
       (error "err"))))
+
+(task "clean" ()
+  (uiop:delete-directory-tree (merge-pathnames "appveyor/")
+                              :validate t
+                              :if-does-not-exist :ignore)
+  (dolist (j '("roswell-*/"
+               "archive/"))
+    (dolist (i (cl:directory j))
+      (uiop:delete-directory-tree i :validate t)))
+  (dolist (j '("roswell-dbgsym*.*"
+               "roswell_*.*"))
+    (dolist (i (cl:directory j))
+      (uiop/common-lisp:delete-file i))))
