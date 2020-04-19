@@ -1,11 +1,18 @@
 #|-*- mode:lisp -*-|#
 (in-package :cl-user)
-(ql:quickload '(:dexador :lake :cl-syntax :roswell.github.utils) :silent t)
+(ql:quickload '(:dexador #-lparallel :cl-syntax :roswell.github.utils) :silent t)
 (defpackage :lake.user
-  (:use :cl :lake :cl-syntax :roswell.github.utils)
+  (:use :cl #+lparallel :lake :cl-syntax :roswell.github.utils)
+  #+lparallel
   (:shadowing-import-from :lake
                           :directory))
 (in-package :lake.user)
+
+#-lparallel ;; missing functions from lake
+(defmacro task (name ign &body body)
+    (declare (ignore ign))
+    `(defun ,(read-from-string name) ()
+       ,@body))
 
 (use-syntax :interpol)
 
@@ -120,3 +127,13 @@
                "roswell_*.*"))
     (dolist (i (cl:directory j))
       (uiop/common-lisp:delete-file i))))
+
+#-lparallel
+(unwind-protect
+     (let (method)
+       (and (setf method (ros:getenv "METHOD"))
+            (setf method (read-from-string method))
+            (fboundp method)
+            (funcall method)))
+  (unless (find-package :swank)
+    (uiop:quit)))
