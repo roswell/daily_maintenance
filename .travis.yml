@@ -24,16 +24,6 @@ env:
 os:
   - linux
 
-jobs:
-  include:
-      - os: linux
-        name: "arm64 build"
-        arch: arm64
-        env:
-         - LISP=sbcl-bin/2.0.0
-         - SCRIPT=release-roswell
-         - RELEASE_ROSWELL_SKIP_APPVEYOR=t
-
 cache:
   directories:
     - $HOME/.roswell
