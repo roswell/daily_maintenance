@@ -13,14 +13,15 @@
 (use-syntax :interpol)
 
 (defun get-tags-from-github ()
-  (let ((tags (remove-if (lambda (x) (getf x :|prerelease|))
-                         (releases-list "Clozure" "ccl"))))
-    (format t "tags: ~S~%" tags)
-    tags))
+  (remove-if (lambda (x) (getf x :|prerelease|))
+             (releases-list "Clozure" "ccl")))
 
 (defun mirror-version (version)
+  (format t "version: ~S~%" version)
   (loop
-     with *release* = (string-left-trim "v" (getf version :|tag_name|))
+     with *release* = (let ((release (string-left-trim "v" (getf version :|tag_name|))))
+                        (format t "release: ~S~%" release)
+                        release)
      with *repo* = "ccl_bin"
      with releases = (releases-list "roswell" "ccl_bin")
      for uri in (mapcar (lambda (x) (getf x :|browser_download_url|))(getf version :|assets|))
