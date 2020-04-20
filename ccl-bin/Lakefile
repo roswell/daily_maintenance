@@ -13,8 +13,10 @@
 (use-syntax :interpol)
 
 (defun get-tags-from-github ()
-  (remove-if (lambda (x) (getf x :|prerelease|))
-             (releases-list "Clozure" "ccl")))
+  (let ((tags (remove-if (lambda (x) (getf x :|prerelease|))
+                         (releases-list "Clozure" "ccl"))))
+    (format t "tags: ~S~%" tags)
+    tags))
 
 (defun mirror-version (version)
   (loop
