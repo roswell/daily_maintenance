@@ -39,7 +39,7 @@ jobs:
 
       - name: Lake
         env:
-          GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_OAUTH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           SCRIPT: ${{ matrix.script }}
         run: |
           cd $SCRIPT;lake
