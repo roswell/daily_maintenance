@@ -17,8 +17,6 @@ env:
    - SCRIPT=libffcall
    - SCRIPT=asdf
    - SCRIPT=ecl
-   - SCRIPT=sbcl-build
-   - SCRIPT=quicklisp
    - SCRIPT=release-roswell
 
 os:

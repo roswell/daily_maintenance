@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  schedule:
+    - cron:  '0 0 * * *'
+  workflow_dispatch:
+
+env:
+  DOCKER_BUILDKIT: 1
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        script:
+          - quicklisp
+          - sbcl-build
+    steps:
+      - uses: actions/checkout@v2
+      - name: setenv
+        run: |
+          echo "$HOME/.roswell/bin" >> $GITHUB_PATH
+          echo "ROSWELL_BRANCH=master" >> $GITHUB_ENV
+          echo "ROSWELL_INSTALL_DIR=$HOME/.roswell" >> $GITHUB_ENV
+
+      - name: Install Roswell
+        env:
+          LISP: sbcl-bin/2.0.0
+        run: |
+          sudo apt-get -y install git build-essential automake libcurl4-openssl-dev
+          curl -L https://raw.githubusercontent.com/roswell/roswell/master/scripts/install-for-ci.sh | sh
+          ros install snmsts/sn.github roswell/sbcl_bin lake prove;lake-tools dump;
+
+      - name: Lake
+        env:
+          GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SCRIPT: ${{ matrix.script }}
+        run: |
+          cd $SCRIPT;lake
