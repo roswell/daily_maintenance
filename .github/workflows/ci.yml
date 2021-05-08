@@ -20,6 +20,12 @@ jobs:
           - clisp
           - asdf
           - ecl
+          - paip
+          - ccl-bin
+          - clasp
+          - libsigsegv
+          - libffcall
+          - release-roswell
 
     steps:
       - uses: actions/checkout@v2

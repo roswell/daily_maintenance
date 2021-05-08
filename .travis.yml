@@ -9,12 +9,6 @@ env:
    - ROSWELL_INSTALL_DIR=$HOME/.roswell
    - LISP=sbcl-bin/1.5.9
   matrix:
-   - SCRIPT=paip
-   - SCRIPT=ccl-bin
-   - SCRIPT=clasp
-   - SCRIPT=libsigsegv
-   - SCRIPT=libffcall
-   - SCRIPT=release-roswell
 
 os:
   - linux
