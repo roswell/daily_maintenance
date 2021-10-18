@@ -43,8 +43,8 @@
                      :key (lambda (x) (getf x :|name|))
                      :test #'equal)
                (progn #+nil(format t "skip ~A~%" uri))
-               (progn (fetch-upload path uri *release*)
-                      #+nil(sleep 1)))
+               (ignore-errors
+                 (fetch-upload path uri *release*)))
         finally
            (let ((l (split-sequence:split-sequence #\lf list))
                  (path "releases.txt"))

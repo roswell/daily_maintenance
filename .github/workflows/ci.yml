@@ -16,7 +16,6 @@ jobs:
       matrix:
         script:
           - quicklisp
-          - sbcl-build
           - clisp
           - asdf
           - ecl
