@@ -16,7 +16,6 @@ jobs:
       matrix:
         script:
           - quicklisp
-          - clisp
           - asdf
           - ecl
           - paip
